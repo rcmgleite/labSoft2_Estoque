@@ -35,7 +35,7 @@ const AproveForm = `<div>
 </form></div>
 `
 
-var store = NewProductStore(10)
+var store = NewProductStore()
 
 // var orderStore = NewOrderStore(1)
 var uOrder = NewOrder(10)
@@ -57,10 +57,10 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 			//TODO FALTA ATUALIZAR O NÚMERO MÍNIMO A QUALQUER MOMENTO
 		} else {
 			fmt.Fprintf(w, `<div><h2>Produtos cadastrados no Estoque: </h2></div>`)
-			for i := 0; i < store.Size; i++ {
-				fmt.Fprintf(w, "Descrição: %s, quantidade atual: %d, quantidade mínima: %d <br>", store.Products[i].description, store.Products[i].currQuantity, store.Products[i].minQuantity)
-
+			for _, value := range uOrder.productList {
+				fmt.Fprintf(w, "Nome: %s, quantidade atual: %d, quantidade mínima: %d <br>", value.name, value.currQuantity, value.minQuantity)
 			}
+
 			fmt.Fprintf(w, `<div><br><h2>Adicionar novo produto: </h2></div>`)
 			fmt.Fprintf(w, AddForm)
 		}
@@ -68,7 +68,7 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 		return
 
 	case "POST":
-		id := store.Size
+		name := r.FormValue("name")
 		description := r.FormValue("description")
 		currQuantity, errCurr := strconv.ParseInt(r.FormValue("currQuantity"), 0, 64)
 		minQuantity, errMin := strconv.ParseInt(r.FormValue("minQuantity"), 0, 64)
@@ -78,7 +78,7 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		p := Product{id, description, currQuantity, minQuantity}
+		p := Product{name, description, currQuantity, minQuantity}
 		store.AddProduct(&p)
 
 		if p.needRefill() {
@@ -104,8 +104,8 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.Method)
 		fmt.Fprintf(w, `<div><h2>Pedido de compra: </h2></div>`)
 
-		for i := 0; i < uOrder.size; i++ {
-			fmt.Fprintf(w, "Descrição: %s -> quantidade a ser comprada: %d<br>", uOrder.productList[i].description, uOrder.productList[i].minQuantity-uOrder.productList[i].currQuantity)
+		for _, value := range uOrder.productList {
+			fmt.Fprintf(w, "Nome: %s -> quantidade a ser comprada: %d<br>", value.name, value.minQuantity-value.currQuantity)
 		}
 
 		if uOrder.size != 0 {

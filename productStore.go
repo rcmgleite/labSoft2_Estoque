@@ -2,19 +2,17 @@ package main
 
 // ProductStore = mock for db
 type ProductStore struct {
-	Size     int
-	Products []Product
+	Products map[string]Product
 }
 
 // NewProductStore = "constructor" for productStore
-func NewProductStore(size int) *ProductStore {
-	return &ProductStore{Products: make([]Product, size), Size: 0}
+func NewProductStore() *ProductStore {
+	return &ProductStore{Products: make(map[string]Product)}
 }
 
 //AddProduct add a product to db
 func (ps *ProductStore) AddProduct(p *Product) {
-	ps.Products[ps.Size] = *p
-	ps.Size++
+	ps.Products[p.name] = *p
 }
 
 //UpdateProduct update a product on db

@@ -2,7 +2,7 @@ package main
 
 //Product struct that defines a product
 type Product struct {
-	id           int
+	name         string
 	description  string
 	currQuantity int64
 	minQuantity  int64
