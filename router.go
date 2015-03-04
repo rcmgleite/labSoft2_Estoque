@@ -10,4 +10,5 @@ type Router struct {
 func (router *Router) Route() {
 	http.HandleFunc("/", defaultHandler)
 	http.HandleFunc("/product", productHandler)
+	http.HandleFunc("/order", orderHandler)
 }
