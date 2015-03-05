@@ -1,22 +1,20 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <div><h2>Pedido de compra</h2></div>
+    <div><h2>Pedido de Compras</h2></div>
     <div>
       <table>
         <thead>
           <tr>
             <th style="width: 20%;">Nome</th>
-            <th style="width: 20%;">Descrição</th>
             <th style="width: 20%;">Quantidade Atual</th>
             <th style="width: 20%;">Quantidade Mínima</th>
           </tr>
         </thead>
         <tbody>
-          {{ range $key, $value := .ProductList }}
+          {{ range $key, $value := .ProdutoList }}
             <tr>
               <td style="width: 20%; text-align: center">{{$value.Name}}</td>
-              <td style="width: 20%; text-align: center">{{$value.Description}}</td>
               <td style="width: 20%; text-align: center">{{$value.CurrQuantity}}</td>
               <td style="width: 20%; text-align: center">{{$value.MinQuantity}}</td>
             </tr>
@@ -26,11 +24,11 @@
       <br>
     </div>
 
-    {{ if .ProductList }}
+    {{ if .ProdutoList }}
       Aprovado: {{.Approved}}
       <div>
         <div>
-          <form method="POST" action="/order">
+          <form method="POST" action="/pedido">
             <input type="text" name="ignore" style="visibility:hidden"><br>
             <input type="submit" value="Aprovar">
           </form>

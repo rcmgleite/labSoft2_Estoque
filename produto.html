@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <div><h2>Produtos cadastrados no Estoque</h2></div>
+    <div><h2>Produtos no Estoque</h2></div>
     <div>
       <table>
         <thead>
           <tr>
             <th  style="width: 20%;">Nome</th>
-            <th  style="width: 20%;">Descrição</th>
             <th  style="width: 20%;">Quantidade Atual</th>
             <th  style="width: 20%;">Quantidade Mínima</th>
           </tr>
@@ -16,7 +15,6 @@
           {{ range $key, $value := . }}
             <tr>
               <td style="width: 20%; text-align: center">{{$value.Name}}</td>
-              <td style="width: 20%; text-align: center">{{$value.Description}}</td>
               <td style="width: 20%; text-align: center">{{$value.CurrQuantity}}</td>
               <td style="width: 20%; text-align: center">{{$value.MinQuantity}}</td>
             </tr>
@@ -28,17 +26,11 @@
     </div>
 
   <div>
-    <form method="POST" action="/product">
+    <form method="POST" action="/produto">
       <div>
         Nome
         <br>
         <input type="text" name="name"><br>
-        <br>
-      </div>
-      <div>
-        Descrição
-        <br>
-        <input type="text" name="description"><br>
         <br>
       </div>
       <div>
