@@ -11,8 +11,8 @@ func NewProductStore() *ProductStore {
 }
 
 //AddProduct add a product to db
-func (ps *ProductStore) AddProduct(p *Product) {
-	ps.Products[p.name] = *p
+func (ps *ProductStore) AddProduct(p Product) {
+	ps.Products[p.Name] = p
 }
 
 //UpdateProduct update a product on db

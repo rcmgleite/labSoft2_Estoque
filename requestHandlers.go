@@ -4,45 +4,18 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"text/template"
 )
-
-//AddForm constant
-const AddForm = `<div>
-<form method="POST" action="/product">
-Descrição: <input type="text" name="description"><br>
-Quantidade atual: <input type="text" name="currQuantity"><br>
-Quantidade mínima: <input type="text" name="minQuantity"><br>
-<input type="submit" value="Adicionar">
-</form></div>
-`
-
-//DefaultForm constant
-const DefaultForm = `<div>
-<form method="GET" action="/product">
-<input type="submit" value="Produtos">
-</form></div>
-<div>
-<form method="GET" action="/order">
-<input type="submit" value="Pedidos de Compra">
-</form></div>
-`
-
-//AproveFrom constant
-const AproveForm = `<div>
-<form method="POST" action="/order">
-<input type="text" name="ignore" style="visibility:hidden"><br>
-<input type="submit" value="Aprovar">
-</form></div>
-`
 
 var store = NewProductStore()
 
 // var orderStore = NewOrderStore(1)
-var uOrder = NewOrder(10)
+var uOrder = NewOrder()
 
 // defaultHandler Just redirect the incomming default "/" request to index
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DefaultForm)
+	t, _ := template.ParseFiles("index.html")
+	t.Execute(w, nil)
 }
 
 // productHandler - handles all http methods for the "/product"
@@ -53,16 +26,13 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 func productHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		if r.URL.Query().Get("description") != "" {
-			//TODO FALTA ATUALIZAR O NÚMERO MÍNIMO A QUALQUER MOMENTO
+		//Gambi.. enquanto não usa JQUERY não da pra fazer nada de diferente de GET e POST
+		//http://stackoverflow.com/questions/1856996/doing-a-http-put-from-a-browser
+		if r.URL.Query().Get("delete") != "" {
+			//TODO
 		} else {
-			fmt.Fprintf(w, `<div><h2>Produtos cadastrados no Estoque: </h2></div>`)
-			for _, value := range uOrder.productList {
-				fmt.Fprintf(w, "Nome: %s, quantidade atual: %d, quantidade mínima: %d <br>", value.name, value.currQuantity, value.minQuantity)
-			}
-
-			fmt.Fprintf(w, `<div><br><h2>Adicionar novo produto: </h2></div>`)
-			fmt.Fprintf(w, AddForm)
+			t, _ := template.ParseFiles("product.html")
+			t.Execute(w, store.Products)
 		}
 
 		return
@@ -79,7 +49,7 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		p := Product{name, description, currQuantity, minQuantity}
-		store.AddProduct(&p)
+		store.AddProduct(p)
 
 		if p.needRefill() {
 			uOrder.addItem(p)
@@ -101,23 +71,9 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 func orderHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		fmt.Println(r.Method)
-		fmt.Fprintf(w, `<div><h2>Pedido de compra: </h2></div>`)
 
-		for _, value := range uOrder.productList {
-			fmt.Fprintf(w, "Nome: %s -> quantidade a ser comprada: %d<br>", value.name, value.minQuantity-value.currQuantity)
-		}
-
-		if uOrder.size != 0 {
-			if uOrder.approved == true {
-				fmt.Fprintf(w, "Situação: Aprovada")
-			} else {
-				fmt.Fprintf(w, "Situação: Esperando Aprovação")
-			}
-		}
-		if uOrder.approved != true && uOrder.size != 0 {
-			fmt.Fprintf(w, AproveForm)
-		}
+		t, _ := template.ParseFiles("order.html")
+		t.Execute(w, uOrder)
 		return
 
 	case "POST":
