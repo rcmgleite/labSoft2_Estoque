@@ -48,7 +48,8 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		p := Product{name, description, currQuantity, minQuantity}
+		//FIXME TYPE
+		p := Product{name, 0, description, currQuantity, minQuantity}
 		store.AddProduct(p)
 
 		if p.needRefill() {

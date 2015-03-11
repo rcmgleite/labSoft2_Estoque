@@ -3,6 +3,7 @@ package main
 //Product struct that defines a product
 type Product struct {
 	Name         string
+	Type         int
 	Description  string
 	CurrQuantity int64
 	MinQuantity  int64
