@@ -8,23 +8,21 @@ import (
 )
 
 //Config variables
-var dbPath = "./estoque.db"
 var dbType = "sqlite3"
 
-//Database struct - will be a Singleton
-type Database struct {
+//DatabaseFactory struct - will be a Singleton factory to retreive the correct db
+type DatabaseFactory struct {
 	db gorm.DB
 }
 
-var instance *Database
+var instance *DatabaseFactory
 
 //NewDatabase = Singleton constructor
-func getDbInstance() *Database {
+func getDbFactoryInstance(dbPath string) *DatabaseFactory {
 	var err error
 	if instance == nil {
-		instance = new(Database)
+		instance = new(DatabaseFactory)
 		instance.db, err = gorm.Open(dbType, dbPath)
-		fmt.Println("First db instance created")
 	}
 
 	if err != nil {
@@ -32,6 +30,9 @@ func getDbInstance() *Database {
 		return nil
 	}
 
-	fmt.Println("returning an already allocated instance after calling NewDao()")
 	return instance
+}
+
+func (dbF *DatabaseFactory) getDataBase() *gorm.DB {
+	return &dbF.db
 }

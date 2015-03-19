@@ -1,36 +1,37 @@
 package main
 
+import "github.com/jinzhu/gorm"
+
 //ProductDAO ...
 type ProductDAO struct {
-	database *Database
+	db *gorm.DB
 }
 
 func newProductDAO() *ProductDAO {
-	return &ProductDAO{database: getDbInstance()}
+	dbFactory := getDbFactoryInstance("./estoque.db")
+	return &ProductDAO{db: dbFactory.getDataBase()}
 }
 
 // Save product on db
 func (dao *ProductDAO) Save(p *Product) {
-	dao.database.db.Create(p)
+	dao.db.Create(p)
 }
 
 //Update product on db
 func (dao *ProductDAO) Update(newProduct *Product) {
-	database := getDbInstance()
-	database.db.Save(newProduct)
+	dao.db.Save(newProduct)
 }
 
 // Delete product from db
 func (dao *ProductDAO) Delete(p *Product) {
-	database := getDbInstance()
-	database.db.Delete(p)
+	dao.db.Delete(p)
 }
 
 //Retreive product from db
 func (dao *ProductDAO) Retreive(ids ...int) []Product {
 	if len(ids) == 0 {
 		var products []Product
-		dao.database.db.Find(&products)
+		dao.db.Find(&products)
 		return products
 	}
 	return nil

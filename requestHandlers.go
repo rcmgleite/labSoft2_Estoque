@@ -37,7 +37,6 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 
 // PUTProductHandler ... TODO - add validations
 func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PUTProductHandler")
 	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
 	var p Product
 	if parseRequestProductForm(r, &p) {
@@ -48,7 +47,6 @@ func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 
 // DELETEProductHandler ...
 func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("DELETEProductHandler")
 	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
 	p := Product{ID: idFromForm}
 	productDAO.Delete(&p)

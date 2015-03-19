@@ -8,3 +8,6 @@ Para usar o projeto, uma das dependencias adicionada foi:
 Para instalar estas dependência, basta executar:
    - ```$ go get github.com/mattn/go-sqlite3```
    - ```$ go get -u github.com/jinzhu/gorm```
+
+## Banco de dados
+  - para criar as tabelas necessárias, basta usar createDatabase.sql
