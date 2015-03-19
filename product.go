@@ -1,12 +1,22 @@
 package main
 
+const (
+	//FOOD ...
+	FOOD = 1 << iota
+	//CLEANING ...
+	CLEANING
+	//ROOMITENS ...
+	ROOMITENS // towels, bed sheets
+)
+
 //Product struct that defines a product
 type Product struct {
-	Name         string
+	ID           int
+	Name         string `sql:"size:255"`
 	Type         int
-	Description  string
-	CurrQuantity int64
-	MinQuantity  int64
+	Description  string `sql:"size:255"`
+	CurrQuantity int
+	MinQuantity  int
 }
 
 func (p *Product) needRefill() bool {

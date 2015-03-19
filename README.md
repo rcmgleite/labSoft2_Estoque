@@ -2,5 +2,7 @@
 
 Para usar o projeto, uma das dependencias adicionada foi:
   - go-sqlite3.
-Para instalar esta dependência, basta executar:
+  - gorm
+Para instalar estas dependência, basta executar:
   $ go get github.com/mattn/go-sqlite3
+  $ go get -u github.com/jinzhu/gorm

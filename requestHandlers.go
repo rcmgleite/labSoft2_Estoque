@@ -7,10 +7,7 @@ import (
 	"text/template"
 )
 
-var store = NewProductStore()
-
-// var orderStore = NewOrderStore(1)
-var uOrder = NewOrder()
+var productDAO = newProductDAO()
 
 // defaultHandler Just redirect the incomming default "/" request to index
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,77 +15,67 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 }
 
-// productHandler - handles all http methods for the "/product"
-// POST: add new product
-// GET: retreive product
-// DELETE: delete product
-// PUT: update product
-func productHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		//Gambi.. enquanto não usa JQUERY não da pra fazer nada de diferente de GET e POST
-		//http://stackoverflow.com/questions/1856996/doing-a-http-put-from-a-browser
-		if r.URL.Query().Get("delete") != "" {
-			//TODO
-		} else {
-			t, _ := template.ParseFiles("product.html")
-			t.Execute(w, store.Products)
-		}
+// GETProductHandler ...
+func GETProductHandler(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("product.html")
+	t.Execute(w, productDAO.Retreive())
+}
 
-		return
+// POSTProductHandler ...
+func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
+	var p Product
 
-	case "POST":
-		name := r.FormValue("name")
-		description := r.FormValue("description")
-		currQuantity, errCurr := strconv.ParseInt(r.FormValue("currQuantity"), 0, 64)
-		minQuantity, errMin := strconv.ParseInt(r.FormValue("minQuantity"), 0, 64)
-
-		if errCurr != nil || errMin != nil || description == "" {
-			http.Redirect(w, r, "/product", http.StatusFound)
-			return
-		}
-
-		//FIXME TYPE
-		p := Product{name, 0, description, currQuantity, minQuantity}
-		store.AddProduct(p)
-
+	if parseRequestFormProduct(r, &p) {
+		productDAO.Save(&p)
 		if p.needRefill() {
-			uOrder.addItem(p)
+			fmt.Println("will need refill")
 		}
+	}
+	http.Redirect(w, r, "/product", http.StatusFound)
 
-		http.Redirect(w, r, "/product", http.StatusFound)
-		return
+}
 
-	case "PUT":
-		fmt.Println("Put method used!")
-		return
-
-	case "DELETE":
-		fmt.Println("Delete method used!")
-		return
+// PUTProductHandler ... TODO - add validations
+func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("PUTProductHandler")
+	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
+	var p Product
+	if parseRequestFormProduct(r, &p) {
+		p.ID = idFromForm
+		productDAO.Update(&p)
 	}
 }
 
-func orderHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
+// DELETEProductHandler ...
+func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("DELETEProductHandler")
+	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
+	p := Product{ID: idFromForm}
+	productDAO.Delete(&p)
+}
 
-		t, _ := template.ParseFiles("order.html")
-		t.Execute(w, uOrder)
-		return
+// GETOrderHandler ...
+func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
+	//TODO
+	t, _ := template.ParseFiles("order.html")
+	t.Execute(w, nil)
+}
 
-	case "POST":
-		uOrder.approve()
-		http.Redirect(w, r, "/order", http.StatusFound)
+// POSTOrderHandler ...
+func POSTOrderHandler(w http.ResponseWriter, r *http.Request) {
+	//TODO
+	// uOrder.approve()
+	http.Redirect(w, r, "/order", http.StatusFound)
+}
 
-		return
+// PUTOrderHandler ...
+func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("PUTOrderHandler")
+	//TODO
+}
 
-	case "PUT":
-		fmt.Println(r.Method)
-		return
-
-	case "DELETE":
-		fmt.Println("Delete method used!")
-		return
-	}
+// DELETEOrderHandler ...
+func DELETEOrderHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("DELETEOrderHandler")
+	//TODO
 }
