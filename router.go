@@ -65,6 +65,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 	if route != nil {
 		route.handler(w, rq)
 	} else {
-		http.Redirect(w, rq, "/product", http.StatusNotFound)
+		//TODO - create not-found html
+		http.Redirect(w, rq, "/", http.StatusNotFound)
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func parseRequestFormProduct(r *http.Request, p *Product) bool {
+func parseRequestProductForm(r *http.Request, p *Product) bool {
 	val := reflect.ValueOf(p).Elem()
 
 	//Starts from 1 to ignore ID

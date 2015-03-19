@@ -25,7 +25,7 @@ func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p Product
 
-	if parseRequestFormProduct(r, &p) {
+	if parseRequestProductForm(r, &p) {
 		productDAO.Save(&p)
 		if p.needRefill() {
 			fmt.Println("will need refill")
@@ -40,7 +40,7 @@ func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("PUTProductHandler")
 	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
 	var p Product
-	if parseRequestFormProduct(r, &p) {
+	if parseRequestProductForm(r, &p) {
 		p.ID = idFromForm
 		productDAO.Update(&p)
 	}
