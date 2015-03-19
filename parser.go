@@ -32,6 +32,8 @@ func BuildStructFromForm(r *http.Request, genericStruct interface{}) bool {
 			break
 		case reflect.String:
 			reflect.ValueOf(genericStruct).Elem().Field(i).SetString(r.FormValue(field.Name))
+
+			//TODO implement other cases
 		}
 	}
 	return true

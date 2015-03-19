@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 //HTTP METHODS
 const (
@@ -50,6 +53,11 @@ func (r *Router) AddRoute(path string, method string, handler http.HandlerFunc) 
 
 //doAddRoute will add the specific route using method and string
 func (r *Router) doAddRoute(method string, path string, handler http.HandlerFunc) {
+	if r.routes[path+method] != nil {
+		fmt.Printf("route with path '%s' with method '%s' already added. The second one will be ignored", path, method)
+		return
+	}
+
 	route := &route{}
 	route.path = path
 	route.method = method

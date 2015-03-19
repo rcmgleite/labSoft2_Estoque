@@ -7,22 +7,20 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//Config variables
-var dbType = "sqlite3"
-
 //DatabaseFactory struct - will be a Singleton factory to retreive the correct db
 type DatabaseFactory struct {
-	db gorm.DB
+	dbType string
 }
 
 var instance *DatabaseFactory
 
-//NewDatabase = Singleton constructor
-func getDbFactoryInstance(dbPath string) *DatabaseFactory {
+//getDbFactoryInstance = Singleton constructor
+func getDbFactoryInstance(dbType string) *DatabaseFactory {
 	var err error
-	if instance == nil {
+	if instance == nil || instance.dbType != dbType {
+		instance = nil
 		instance = new(DatabaseFactory)
-		instance.db, err = gorm.Open(dbType, dbPath)
+		instance.dbType = dbType
 	}
 
 	if err != nil {
@@ -33,6 +31,11 @@ func getDbFactoryInstance(dbPath string) *DatabaseFactory {
 	return instance
 }
 
-func (dbF *DatabaseFactory) getDataBase() *gorm.DB {
-	return &dbF.db
+func (dbF *DatabaseFactory) getDataBase(dbPath string) *gorm.DB {
+	db, err := gorm.Open(dbF.dbType, dbPath)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return &db
 }

@@ -8,8 +8,8 @@ type GenericDAO struct {
 }
 
 func newGenericDAO() *GenericDAO {
-	dbFactory := getDbFactoryInstance("./estoque.db")
-	return &GenericDAO{db: dbFactory.getDataBase()}
+	dbFactory := getDbFactoryInstance("sqlite3")
+	return &GenericDAO{db: dbFactory.getDataBase("./estoque.db")}
 }
 
 // Save product on db
