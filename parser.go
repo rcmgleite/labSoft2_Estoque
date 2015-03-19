@@ -7,8 +7,10 @@ import (
 	"strconv"
 )
 
-func parseRequestProductForm(r *http.Request, p *Product) bool {
-	val := reflect.ValueOf(p).Elem()
+// BuildStructFromForm will iterate over request params and build the corresponding struct passed as parameter
+// The struct fields must have the same names as the form
+func BuildStructFromForm(r *http.Request, genericStruct interface{}) bool {
+	val := reflect.ValueOf(genericStruct).Elem()
 
 	//Starts from 1 to ignore ID
 	for i := 0; i < val.NumField(); i++ {
@@ -17,7 +19,7 @@ func parseRequestProductForm(r *http.Request, p *Product) bool {
 			continue
 		}
 		r.FormValue(field.Name)
-		switch reflect.ValueOf(p).Elem().Field(i).Kind() {
+		switch reflect.ValueOf(genericStruct).Elem().Field(i).Kind() {
 		case reflect.Int:
 			value, err := strconv.ParseInt(r.FormValue(field.Name), 0, 64)
 			if err != nil {
@@ -25,11 +27,11 @@ func parseRequestProductForm(r *http.Request, p *Product) bool {
 				fmt.Println(field.Name)
 				return false
 			}
-			reflect.ValueOf(p).Elem().Field(i).SetInt(value)
+			reflect.ValueOf(genericStruct).Elem().Field(i).SetInt(value)
 
 			break
 		case reflect.String:
-			reflect.ValueOf(p).Elem().Field(i).SetString(r.FormValue(field.Name))
+			reflect.ValueOf(genericStruct).Elem().Field(i).SetString(r.FormValue(field.Name))
 		}
 	}
 	return true

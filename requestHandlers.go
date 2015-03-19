@@ -7,7 +7,7 @@ import (
 	"text/template"
 )
 
-var productDAO = newProductDAO()
+var dao = newGenericDAO()
 
 // defaultHandler Just redirect the incomming default "/" request to index
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,15 +18,15 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 // GETProductHandler ...
 func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("product.html")
-	t.Execute(w, productDAO.Retreive())
+	t.Execute(w, dao.Retreive())
 }
 
 // POSTProductHandler ...
 func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p Product
 
-	if parseRequestProductForm(r, &p) {
-		productDAO.Save(&p)
+	if BuildStructFromForm(r, &p) {
+		dao.Save(&p)
 		if p.needRefill() {
 			fmt.Println("will need refill")
 		}
@@ -39,9 +39,9 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
 	var p Product
-	if parseRequestProductForm(r, &p) {
+	if BuildStructFromForm(r, &p) {
 		p.ID = idFromForm
-		productDAO.Update(&p)
+		dao.Update(&p)
 	}
 }
 
@@ -49,7 +49,7 @@ func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
 	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
 	p := Product{ID: idFromForm}
-	productDAO.Delete(&p)
+	dao.Delete(&p)
 }
 
 // GETOrderHandler ...
