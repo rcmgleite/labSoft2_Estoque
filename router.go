@@ -74,6 +74,6 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 		route.handler(w, rq)
 	} else {
 		//TODO - create not-found html
-		http.Redirect(w, rq, "/", http.StatusNotFound)
+		http.NotFound(w, rq)
 	}
 }

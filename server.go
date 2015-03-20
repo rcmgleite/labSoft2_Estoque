@@ -18,6 +18,10 @@ func main() {
 	r.AddRoute("/order", PUT, PUTOrderHandler)
 	r.AddRoute("/order", DELETE, DELETEOrderHandler)
 
+	// TODO - fix requests to css and js files
+	// r.AddRoute("/css", GET, GETcssHandler)
+	// r.AddRoute("/js", GET, GETjsHandler)
+
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
 }
