@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/rcmgleite/labEngSoft_Estoque/client"
 	"github.com/rcmgleite/labEngSoft_Estoque/router"
 )
 
@@ -24,6 +24,7 @@ func main() {
 
 	http.Handle("/", r)
 
-	client.Run()
+	fmt.Println("Server running on port: 8080")
+
 	http.ListenAndServe(":8080", nil)
 }

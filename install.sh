@@ -28,14 +28,9 @@ echo '> Preparing to execute "go install"...'
 go install
 echo '>> Done!'
 
-# 4) Copy views/ to bin
-echo '> Copying views/ to $GOPATH/bin...'
-cp -r client/views/ $GOPATH/bin
-echo '>> Done!'
-
 echo '>> Installation Complete!'
 
-# 5) Run server
+# 4) Run server
 echo '> Do you want to run the server right now? (y/n)'
 read answer2
 if [[ $answer2 = "y" ]]
