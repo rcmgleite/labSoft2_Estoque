@@ -1,6 +1,9 @@
 package main
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+	"github.com/rcmgleite/labEngSoft_Estoque/models"
+)
 
 //GenericDAO ...
 type GenericDAO struct {
@@ -13,24 +16,24 @@ func newGenericDAO() *GenericDAO {
 }
 
 // Save product on db
-func (dao *GenericDAO) Save(entity interface{}) {
-	dao.db.Create(entity)
+func (dao *GenericDAO) Save(entity interface{}) error {
+	return dao.db.Create(entity).Error
 }
 
 //Update product on db
-func (dao *GenericDAO) Update(newEntity interface{}) {
-	dao.db.Save(newEntity)
+func (dao *GenericDAO) Update(newEntity interface{}) error {
+	return dao.db.Save(newEntity).Error
 }
 
 // Delete product from db
-func (dao *GenericDAO) Delete(entity interface{}) {
-	dao.db.Delete(entity)
+func (dao *GenericDAO) Delete(entity interface{}) error {
+	return dao.db.Delete(entity).Error
 }
 
 //Retreive product from db
 func (dao *GenericDAO) Retreive(ids ...int) interface{} {
 	if len(ids) == 0 {
-		var products []Product
+		var products []models.Product
 		dao.db.Find(&products)
 		return products
 	}

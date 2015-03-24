@@ -1,69 +1,132 @@
 package main
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"net/http"
-	"strconv"
-	"text/template"
+
+	"github.com/rcmgleite/labEngSoft_Estoque/models"
 )
+
+type responseJSON struct {
+	Msg string
+}
 
 var dao = newGenericDAO()
 
-// defaultHandler Just redirect the incomming default "/" request to index
-func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("views/html/index.html")
-	t.Execute(w, nil)
+func writeBack(w http.ResponseWriter, r *http.Request, i interface{}) {
+	ct := r.Header.Get("Content-Type")
+	switch ct {
+	case "application/json":
+		bJSON, err := json.Marshal(i)
+		if err != nil {
+			fmt.Println(err)
+		}
+		w.Write(bJSON)
+		break
+
+	case "application/xml":
+		bXML, err := xml.Marshal(i)
+		if err != nil {
+			fmt.Println(err)
+		}
+		w.Write(bXML)
+		break
+
+	}
 }
 
 // GETProductHandler ...
 func GETProductHandler(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("views/html/product.html")
-	t.Execute(w, dao.Retreive())
+	writeBack(w, r, dao.Retreive())
 }
 
 // POSTProductHandler ...
 func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
-	var p Product
-
-	if BuildStructFromForm(r, &p) {
-		dao.Save(&p)
-		if p.needRefill() {
+	r.ParseForm()
+	decoder := json.NewDecoder(r.Body)
+	var p models.Product
+	err := decoder.Decode(&p)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		err = dao.Save(&p)
+		if p.NeedRefill() {
 			fmt.Println("will need refill")
 		}
+		fmt.Println(p)
 	}
-	http.Redirect(w, r, "/product", http.StatusFound)
 
+	var msg string
+	if err != nil {
+		msg = err.Error()
+	} else {
+		msg = "Sucess"
+	}
+	rj := responseJSON{Msg: msg}
+
+	writeBack(w, r, rj)
 }
 
-// PUTProductHandler ... TODO - add validations
+// PUTProductHandler ...
 func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
-	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
-	var p Product
-	if BuildStructFromForm(r, &p) {
-		p.ID = idFromForm
-		dao.Update(&p)
+	r.ParseForm()
+	decoder := json.NewDecoder(r.Body)
+	var p models.Product
+	err := decoder.Decode(&p)
+
+	if err == nil {
+		err = dao.Update(&p)
 	}
+
+	var msg string
+	if err != nil {
+		msg = err.Error()
+	} else {
+		msg = "Sucess"
+	}
+
+	rj := responseJSON{Msg: msg}
+
+	writeBack(w, r, rj)
 }
 
 // DELETEProductHandler ...
 func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
-	idFromForm, _ := strconv.Atoi(r.FormValue("id"))
-	p := Product{ID: idFromForm}
-	dao.Delete(&p)
+	r.ParseForm()
+	decoder := json.NewDecoder(r.Body)
+	var p models.Product
+	err := decoder.Decode(&p)
+
+	if err == nil {
+		err = dao.Delete(&p)
+	}
+
+	var msg string
+	if err != nil {
+		msg = err.Error()
+	} else {
+		msg = "Sucess"
+	}
+
+	rj := responseJSON{Msg: msg}
+
+	writeBack(w, r, rj)
 }
 
 // GETOrderHandler ...
 func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
 	//TODO
-	t, _ := template.ParseFiles("views/html/order.html")
-	t.Execute(w, nil)
+	// t, _ := template.ParseFiles("views/html/order.html")
+	// t.Execute(w, nil)
 }
 
 // POSTOrderHandler ...
 func POSTOrderHandler(w http.ResponseWriter, r *http.Request) {
 	//TODO
 	// uOrder.approve()
-	http.Redirect(w, r, "/order", http.StatusFound)
+	// http.Redirect(w, r, "/order", http.StatusFound)
 }
 
 // PUTOrderHandler ...
@@ -77,14 +140,3 @@ func DELETEOrderHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("DELETEOrderHandler")
 	//TODO
 }
-
-// aux
-
-// GETcssHandler serves all requests for CSS files
-//func GETcssHandler(w http.ResponseWriter, r *http.Request) {
-//	fmt.Println(r.URL.Path)
-//	fmt.Fprintf(w, "ainda nada")
-//}
-
-// GETjsHandler serves all requests for js files
-//func GETjsHandler(w http.ResponseWriter, r *http.Request) {}

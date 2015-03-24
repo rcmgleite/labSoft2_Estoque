@@ -1,4 +1,4 @@
-package main
+package models
 
 //Order is the struct that defines the purchase order
 type Order struct {

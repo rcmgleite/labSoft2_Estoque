@@ -1,4 +1,4 @@
-package main
+package models
 
 const (
 	//FOOD ...
@@ -19,7 +19,8 @@ type Product struct {
 	MinQuantity  int
 }
 
-func (p *Product) needRefill() bool {
+//NeedRefill verify if product need refill
+func (p *Product) NeedRefill() bool {
 	if p.CurrQuantity < p.MinQuantity {
 		return true
 	}

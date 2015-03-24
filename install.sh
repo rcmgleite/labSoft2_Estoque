@@ -30,7 +30,7 @@ echo '>> Done!'
 
 # 4) Copy views/ to bin
 echo '> Copying views/ to $GOPATH/bin...'
-cp -r views/ $GOPATH/bin
+cp -r client/views/ $GOPATH/bin
 echo '>> Done!'
 
 echo '>> Installation Complete!'

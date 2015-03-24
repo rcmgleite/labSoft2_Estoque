@@ -1,4 +1,4 @@
-package main
+package router
 
 import (
 	"fmt"
@@ -22,8 +22,8 @@ type route struct {
 //Router struct
 type Router struct {
 	routes map[string]*route
-	// middleware filters TODO
-	// filters []http.HandlerFunc
+	//Middleware
+	filters []http.HandlerFunc
 }
 
 //NewRouter = constructor for router
@@ -73,7 +73,6 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 	if route != nil {
 		route.handler(w, rq)
 	} else {
-		//TODO - create not-found html
-		http.NotFound(w, rq)
+		http.ServeFile(w, rq, rq.URL.Path[1:])
 	}
 }
