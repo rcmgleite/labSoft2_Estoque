@@ -12,11 +12,29 @@ func newOrderDAO() *OrderDAO {
 	return &OrderDAO{dao}
 }
 
-//Retreive ...
-func (dao *OrderDAO) Retreive(toFill *models.Order) error {
+//GetOpenOrder ...
+func (dao *OrderDAO) GetOpenOrder(toFill *models.Order) error {
+	err := dao.db.Where("approved = ?", false).First(toFill).Error
+	if err != nil {
+		return err
+	}
 	products := []models.Product{}
-	err := dao.db.Debug().Model(toFill).Related(&products, "Products").Error
+	err = dao.db.Model(toFill).Related(&products, "Products").Error
 	toFill.Products = products
 
+	return err
+}
+
+// AddProduct ...
+func (dao *OrderDAO) AddProduct(product models.Product) error {
+	var toUpdate models.Order
+	err := dao.GetOpenOrder(&toUpdate)
+	if err == nil {
+		return dao.db.Model(&toUpdate).Association("Products").Append([]models.Product{product}).Error
+	}
+	if err.Error() == "record not found" {
+		err = dao.Save(&toUpdate)
+		return dao.AddProduct(product)
+	}
 	return err
 }

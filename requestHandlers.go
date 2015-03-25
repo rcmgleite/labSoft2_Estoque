@@ -71,7 +71,7 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 		err = productDAO.Save(&p)
 		if err == nil {
 			if p.NeedRefill() {
-				//TODO
+				orderDAO.AddProduct(p)
 			}
 		}
 	}
@@ -88,6 +88,11 @@ func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err == nil {
 		err = productDAO.Update(&p)
+		if err == nil {
+			if p.NeedRefill() {
+				orderDAO.AddProduct(p)
+			}
+		}
 	}
 
 	rj := createResponseMsg(err)
@@ -109,9 +114,8 @@ func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
 
 // GETOrderHandler ...
 func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
-	//FIXME
-	order := models.Order{ID: -1, Approved: false}
-	orderDAO.Retreive(&order)
+	order := models.Order{}
+	orderDAO.GetOpenOrder(&order)
 	writeBack(w, r, order)
 }
 
