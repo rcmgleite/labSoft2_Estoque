@@ -9,11 +9,12 @@ import (
 	"github.com/rcmgleite/labEngSoft_Estoque/models"
 )
 
-type responseJSON struct {
+type responseMSG struct {
 	Msg string
 }
 
-var dao = newGenericDAO()
+var productDAO = newProductDAO()
+var orderDAO = newOrderDAO()
 
 func writeBack(w http.ResponseWriter, r *http.Request, i interface{}) {
 	ct := r.Header.Get("Content-Type")
@@ -37,106 +38,106 @@ func writeBack(w http.ResponseWriter, r *http.Request, i interface{}) {
 	}
 }
 
-// GETProductHandler ...
-func GETProductHandler(w http.ResponseWriter, r *http.Request) {
-	writeBack(w, r, dao.Retreive())
-}
-
-// POSTProductHandler ...
-func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	decoder := json.NewDecoder(r.Body)
-	var p models.Product
-	err := decoder.Decode(&p)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		err = dao.Save(&p)
-		if p.NeedRefill() {
-			fmt.Println("will need refill")
-		}
-		fmt.Println(p)
-	}
-
+func createResponseMsg(err error) responseMSG {
 	var msg string
 	if err != nil {
 		msg = err.Error()
 	} else {
 		msg = "Sucess"
 	}
-	rj := responseJSON{Msg: msg}
+	return responseMSG{Msg: msg}
+}
+
+func parseReqBody(r *http.Request, i interface{}) error {
+	r.ParseForm()
+	decoder := json.NewDecoder(r.Body)
+	return decoder.Decode(i)
+}
+
+// GETProductHandler ...
+func GETProductHandler(w http.ResponseWriter, r *http.Request) {
+	var products []models.Product
+	productDAO.Retreive(&products)
+	writeBack(w, r, products)
+}
+
+// POSTProductHandler ...
+func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
+	var p models.Product
+	err := parseReqBody(r, &p)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		err = productDAO.Save(&p)
+		if err == nil {
+			if p.NeedRefill() {
+				//TODO
+			}
+		}
+	}
+
+	rj := createResponseMsg(err)
 
 	writeBack(w, r, rj)
 }
 
 // PUTProductHandler ...
 func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	decoder := json.NewDecoder(r.Body)
 	var p models.Product
-	err := decoder.Decode(&p)
+	err := parseReqBody(r, &p)
 
 	if err == nil {
-		err = dao.Update(&p)
+		err = productDAO.Update(&p)
 	}
 
-	var msg string
-	if err != nil {
-		msg = err.Error()
-	} else {
-		msg = "Sucess"
-	}
-
-	rj := responseJSON{Msg: msg}
-
+	rj := createResponseMsg(err)
 	writeBack(w, r, rj)
 }
 
 // DELETEProductHandler ...
 func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	decoder := json.NewDecoder(r.Body)
 	var p models.Product
-	err := decoder.Decode(&p)
+	err := parseReqBody(r, &p)
 
 	if err == nil {
-		err = dao.Delete(&p)
+		err = productDAO.Delete(&p)
 	}
 
-	var msg string
-	if err != nil {
-		msg = err.Error()
-	} else {
-		msg = "Sucess"
-	}
-
-	rj := responseJSON{Msg: msg}
-
+	rj := createResponseMsg(err)
 	writeBack(w, r, rj)
 }
 
 // GETOrderHandler ...
 func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO
-	// t, _ := template.ParseFiles("views/html/order.html")
-	// t.Execute(w, nil)
-}
-
-// POSTOrderHandler ...
-func POSTOrderHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO
-	// uOrder.approve()
-	// http.Redirect(w, r, "/order", http.StatusFound)
+	//FIXME
+	order := models.Order{ID: -1, Approved: false}
+	orderDAO.Retreive(&order)
+	writeBack(w, r, order)
 }
 
 // PUTOrderHandler ...
 func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PUTOrderHandler")
-	//TODO
+	var order models.Order
+	err := parseReqBody(r, &order)
+
+	if err == nil {
+		err = orderDAO.Update(&order)
+	}
+
+	rj := createResponseMsg(err)
+	writeBack(w, r, rj)
 }
 
 // DELETEOrderHandler ...
 func DELETEOrderHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("DELETEOrderHandler")
-	//TODO
+	var order models.Order
+	err := parseReqBody(r, &order)
+
+	if err == nil {
+		err = orderDAO.Delete(&order)
+	}
+
+	rj := createResponseMsg(err)
+
+	writeBack(w, r, rj)
 }

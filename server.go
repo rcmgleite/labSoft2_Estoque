@@ -18,7 +18,6 @@ func main() {
 
 	// /order
 	r.AddRoute("/order", router.GET, GETOrderHandler)
-	r.AddRoute("/order", router.POST, POSTOrderHandler)
 	r.AddRoute("/order", router.PUT, PUTOrderHandler)
 	r.AddRoute("/order", router.DELETE, DELETEOrderHandler)
 

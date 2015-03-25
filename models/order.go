@@ -2,17 +2,18 @@ package models
 
 //Order is the struct that defines the purchase order
 type Order struct {
-	ProductList map[string]Product
-	Approved    bool
+	ID       int
+	Products []Product `gorm:"many2many:order_products;"`
+	Approved bool
 }
 
 //NewOrder is a "constructor" for Order
 func NewOrder() *Order {
-	return &Order{ProductList: make(map[string]Product), Approved: false}
+	return &Order{}
 }
 
 func (o *Order) addItem(p Product) {
-	o.ProductList[p.Name] = p
+	o.Products = append(o.Products, p)
 }
 
 func (o *Order) removeItem(id int64) {
