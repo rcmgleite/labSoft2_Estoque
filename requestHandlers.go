@@ -5,6 +5,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"net/url"
+	"reflect"
+	"strconv"
 
 	"github.com/rcmgleite/labEngSoft_Estoque/models"
 )
@@ -12,9 +15,6 @@ import (
 type responseMSG struct {
 	Msg string
 }
-
-var productDAO = newProductDAO()
-var orderDAO = newOrderDAO()
 
 func writeBack(w http.ResponseWriter, r *http.Request, i interface{}) {
 	ct := r.Header.Get("Content-Type")
@@ -54,11 +54,51 @@ func parseReqBody(r *http.Request, i interface{}) error {
 	return decoder.Decode(i)
 }
 
+func queryStringToStruct(query url.Values, _struct interface{}) {
+	newInstance := reflect.ValueOf(_struct).Elem()
+
+	for k, v := range query {
+		field := newInstance.FieldByName(k)
+
+		switch field.Kind() {
+		case reflect.Int:
+			intValue, err := strconv.ParseInt(v[0], 0, 64)
+			if err == nil {
+				fmt.Println(field)
+				field.SetInt(intValue)
+			}
+
+		case reflect.String:
+			field.SetString(v[0])
+		}
+	}
+}
+
 // GETProductHandler ...
 func GETProductHandler(w http.ResponseWriter, r *http.Request) {
-	var products []models.Product
-	productDAO.Retreive(&products)
-	writeBack(w, r, products)
+	queryString := r.URL.Query()
+	var p models.Product
+	queryStringToStruct(queryString, &p)
+
+	products, err := p.Retreive()
+	if err != nil {
+		rj := createResponseMsg(err)
+		writeBack(w, r, rj)
+	} else {
+		writeBack(w, r, products)
+	}
+}
+
+// FIXME - make database insertions on the same transaction
+func addProductToOrder(p models.Product) {
+	var order models.Order
+	err := order.GetOpenOrder()
+	if err != nil && err.Error() == "record not found" {
+		order.Save()
+		order.AddProduct(p)
+	} else {
+		order.AddProduct(p)
+	}
 }
 
 // POSTProductHandler ...
@@ -68,10 +108,10 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		err = productDAO.Save(&p)
+		err = p.Save()
 		if err == nil {
 			if p.NeedRefill() {
-				orderDAO.AddProduct(p)
+				addProductToOrder(p)
 			}
 		}
 	}
@@ -87,10 +127,10 @@ func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 	err := parseReqBody(r, &p)
 
 	if err == nil {
-		err = productDAO.Update(&p)
+		err = p.Update()
 		if err == nil {
 			if p.NeedRefill() {
-				orderDAO.AddProduct(p)
+				addProductToOrder(p)
 			}
 		}
 	}
@@ -105,7 +145,7 @@ func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
 	err := parseReqBody(r, &p)
 
 	if err == nil {
-		err = productDAO.Delete(&p)
+		err = p.Delete()
 	}
 
 	rj := createResponseMsg(err)
@@ -115,7 +155,7 @@ func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
 // GETOrderHandler ...
 func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
 	order := models.Order{}
-	orderDAO.GetOpenOrder(&order)
+	order.GetOpenOrder()
 	writeBack(w, r, order)
 }
 
@@ -125,7 +165,7 @@ func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
 	err := parseReqBody(r, &order)
 
 	if err == nil {
-		err = orderDAO.Update(&order)
+		err = order.Update()
 	}
 
 	rj := createResponseMsg(err)
@@ -138,7 +178,7 @@ func DELETEOrderHandler(w http.ResponseWriter, r *http.Request) {
 	err := parseReqBody(r, &order)
 
 	if err == nil {
-		err = orderDAO.Delete(&order)
+		err = order.Delete()
 	}
 
 	rj := createResponseMsg(err)

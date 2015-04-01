@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"fmt"
@@ -7,20 +7,20 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//DatabaseFactory struct - will be a Singleton factory to retreive the correct db
-type DatabaseFactory struct {
+//DbFactory struct - will be a Singleton factory to retreive the correct db
+type DbFactory struct {
 	dbType string
 	dbs    map[string]*gorm.DB
 }
 
-var instance *DatabaseFactory
+var instance *DbFactory
 
-//getDbFactoryInstance = Singleton constructor
-func getDbFactoryInstance(dbType string) *DatabaseFactory {
+//GetDbFactoryInstance = Singleton constructor
+func GetDbFactoryInstance(dbType string) *DbFactory {
 	var err error
 	if instance == nil || instance.dbType != dbType {
 		instance = nil
-		instance = new(DatabaseFactory)
+		instance = new(DbFactory)
 		instance.dbs = make(map[string]*gorm.DB)
 		instance.dbType = dbType
 	}
@@ -33,7 +33,8 @@ func getDbFactoryInstance(dbType string) *DatabaseFactory {
 	return instance
 }
 
-func (dbF *DatabaseFactory) getDataBase(dbPath string) *gorm.DB {
+//GetDatabase ...
+func (dbF *DbFactory) GetDatabase(dbPath string) *gorm.DB {
 	if dbF.dbs[dbPath] != nil {
 		return dbF.dbs[dbPath]
 	}
