@@ -1,7 +1,5 @@
 package models
 
-import "github.com/rcmgleite/labEngSoft_Estoque/database"
-
 const (
 	//FOOD ...
 	FOOD = 1 << iota
@@ -11,17 +9,17 @@ const (
 	ROOMITENS // towels, bed sheets
 )
 
-var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
+// var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
 
 //Product struct that defines a product
 type Product struct {
+	BaseModel    `sql:"-"` // Ignore this field
 	ID           int
 	Name         string `sql:"size:255"`
 	Type         int
 	Description  string `sql:"size:255"`
 	CurrQuantity int
 	MinQuantity  int
-	queryParams  map[string]string `sql:"-"` // Ignore this field
 }
 
 //Save ..
@@ -59,10 +57,4 @@ func (p *Product) NeedRefill() bool {
 		return true
 	}
 	return false
-}
-
-//Aux functions
-
-func buildQuery(queryMap map[string]string) string {
-	return ""
 }
