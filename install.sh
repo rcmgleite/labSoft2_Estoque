@@ -4,7 +4,7 @@ echo '> Cleaning up previous installation...'
 initialDir=$(pwd)
 echo '> Entering $GOPATH/bin dir at: '$GOPATH
 cd $GOPATH/bin
-rm -rf views/ labEngSoft_Estoque
+rm -rf views/ labSoft2_Estoque
 cd $initialDir
 echo '>> Done!'
 
@@ -37,7 +37,7 @@ if [[ $answer2 = "y" ]]
   then
   echo '>> Executing server'
   cd $GOPATH/bin/
-  ./labEngSoft_Estoque
+  ./labSoft2_Estoque
 else
   echo '> Exiting...'
 fi

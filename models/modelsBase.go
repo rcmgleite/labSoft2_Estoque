@@ -1,6 +1,6 @@
 package models
 
-import "github.com/rcmgleite/labEngSoft_Estoque/database"
+import "github.com/rcmgleite/labSoft2_Estoque/database"
 
 var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
 

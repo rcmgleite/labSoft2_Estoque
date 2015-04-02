@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/rcmgleite/labEngSoft_Estoque/models"
+	"github.com/rcmgleite/labSoft2_Estoque/models"
 )
 
 type responseMSG struct {
