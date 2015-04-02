@@ -15,6 +15,7 @@ func main() {
 	r.AddRoute("/product", router.POST, POSTProductHandler)
 	r.AddRoute("/product", router.PUT, PUTProductHandler)
 	r.AddRoute("/product", router.DELETE, DELETEProductHandler)
+	r.AddRoute("/product/query", router.POST, POSTQueryProductHandler)
 
 	// /order
 	r.AddRoute("/order", router.GET, GETOrderHandler)

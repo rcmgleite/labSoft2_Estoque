@@ -64,13 +64,33 @@ func queryStringToStruct(query url.Values, _struct interface{}) {
 		case reflect.Int:
 			intValue, err := strconv.ParseInt(v[0], 0, 64)
 			if err == nil {
-				fmt.Println(field)
 				field.SetInt(intValue)
 			}
 
 		case reflect.String:
 			field.SetString(v[0])
+
 		}
+
+	}
+}
+
+//POSTQueryProductHandler ...
+func POSTQueryProductHandler(w http.ResponseWriter, r *http.Request) {
+	var p models.Product
+	err := parseReqBody(r, &p)
+	if err != nil {
+		rj := createResponseMsg(err)
+		writeBack(w, r, rj)
+	} else {
+		products, err := p.Retreive()
+		if err != nil {
+			rj := createResponseMsg(err)
+			writeBack(w, r, rj)
+		} else {
+			writeBack(w, r, products)
+		}
+
 	}
 }
 
@@ -106,7 +126,8 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
 	err := parseReqBody(r, &p)
 	if err != nil {
-		fmt.Println(err)
+		rj := createResponseMsg(err)
+		writeBack(w, r, rj)
 	} else {
 		err = p.Save()
 		if err == nil {
@@ -117,7 +138,6 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rj := createResponseMsg(err)
-
 	writeBack(w, r, rj)
 }
 

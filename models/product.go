@@ -9,8 +9,6 @@ const (
 	ROOMITENS // towels, bed sheets
 )
 
-// var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
-
 //Product struct that defines a product
 type Product struct {
 	BaseModel    `sql:"-"` // Ignore this field
@@ -37,16 +35,25 @@ func (p *Product) Delete() error {
 	return db.Delete(p).Error
 }
 
-//Retreive ...
+//Retreive ... it uses the object and a plain query to execute sql cmds
 func (p *Product) Retreive() ([]Product, error) {
-
 	var query string
-	if p.queryParams != nil {
-		query = buildQuery(p.queryParams)
+	if p.QueryParams != nil {
+		query = buildQuery(p.QueryParams)
 	}
 
+	orderBy := p.QueryParams["order_by"]
+
 	var products []Product
-	err := db.Where(*p).Find(&products, query).Error
+	var err error
+
+	//Remove queryParams - gambi enquanto nao consigo tirar BaseModel das buscas
+	p.QueryParams = nil
+	if orderBy != "" {
+		err = db.Order(orderBy).Where(*p).Find(&products, query).Error
+	} else {
+		err = db.Where(*p).Find(&products, query).Error
+	}
 
 	return products, err
 }

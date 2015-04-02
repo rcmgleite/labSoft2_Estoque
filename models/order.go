@@ -1,7 +1,5 @@
 package models
 
-// var _db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
-
 //Order is the struct that defines the purchase order
 type Order struct {
 	BaseModel `sql:"-"` // Ignore this field
