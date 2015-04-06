@@ -38,5 +38,36 @@ func (order *Order) GetOpenOrder() error {
 
 // AddProduct ...
 func (order *Order) AddProduct(product Product) error {
+	err := order.GetOpenOrder()
+	if err != nil {
+		if err.Error() == "record not found" {
+			return order.createOrderAndAddProduct(product)
+		}
+		return err
+	}
+	return order.addProduct(product)
+}
+
+func (order *Order) createOrderAndAddProduct(product Product) error {
+	//Creates a single transaction to create and add new product to order
+	tx := db.Begin()
+
+	err := tx.Create(order).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Model(order).Association("Products").Append([]Product{product}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func (order *Order) addProduct(product Product) error {
 	return db.Model(order).Association("Products").Append([]Product{product}).Error
 }

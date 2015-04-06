@@ -22,12 +22,32 @@ type Product struct {
 
 //Save ..
 func (p *Product) Save() error {
-	return db.Create(p).Error
+	err := db.Create(p).Error
+	if err != nil {
+		return err
+	}
+
+	if p.NeedRefill() {
+		order := Order{}
+		err = order.AddProduct(*p)
+	}
+
+	return err
 }
 
 // Update ...
 func (p *Product) Update() error {
-	return db.Save(p).Error
+	err := db.Save(p).Error
+
+	if err != nil {
+		return err
+	}
+
+	if p.NeedRefill() {
+		order := Order{}
+		err = order.AddProduct(*p)
+	}
+	return err
 }
 
 // Delete ...
@@ -47,7 +67,7 @@ func (p *Product) Retreive() ([]Product, error) {
 	var products []Product
 	var err error
 
-	//Remove queryParams - gambi enquanto nao consigo tirar BaseModel das buscas
+	//Remove queryParams
 	p.QueryParams = nil
 	if orderBy != "" {
 		err = db.Order(orderBy).Where(*p).Find(&products, query).Error

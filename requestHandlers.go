@@ -44,18 +44,6 @@ func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 	writeBack(w, r, rj)
 }
 
-// FIXME - make database insertions on the same transaction
-func addProductToOrder(p models.Product) {
-	var order models.Order
-	err := order.GetOpenOrder()
-	if err != nil && err.Error() == "record not found" {
-		order.Save()
-		order.AddProduct(p)
-	} else {
-		order.AddProduct(p)
-	}
-}
-
 // POSTProductHandler ...
 func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
@@ -74,9 +62,6 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if p.NeedRefill() {
-		addProductToOrder(p)
-	}
 	rj := NewResponseJSON("Product successfully saved", err)
 	writeBack(w, r, rj)
 }
@@ -99,10 +84,6 @@ func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 		rj := NewResponseJSON(nil, err)
 		writeBack(w, r, rj)
 		return
-	}
-
-	if p.NeedRefill() {
-		addProductToOrder(p)
 	}
 
 	rj := NewResponseJSON("Product updated successfully", err)
