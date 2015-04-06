@@ -1,112 +1,47 @@
 package main
 
 import (
-	"encoding/json"
-	"encoding/xml"
-	"fmt"
 	"net/http"
-	"net/url"
-	"reflect"
-	"strconv"
 
 	"github.com/rcmgleite/labSoft2_Estoque/models"
+	"github.com/rcmgleite/labSoft2_Estoque/requestDecoder"
 )
-
-type responseMSG struct {
-	Msg string
-}
-
-func writeBack(w http.ResponseWriter, r *http.Request, i interface{}) {
-	ct := r.Header.Get("Content-Type")
-	switch ct {
-	case "application/json":
-		bJSON, err := json.Marshal(i)
-		if err != nil {
-			fmt.Println(err)
-		}
-		w.Write(bJSON)
-		break
-
-	case "application/xml":
-		bXML, err := xml.Marshal(i)
-		if err != nil {
-			fmt.Println(err)
-		}
-		w.Write(bXML)
-		break
-
-	}
-}
-
-func createResponseMsg(err error) responseMSG {
-	var msg string
-	if err != nil {
-		msg = err.Error()
-	} else {
-		msg = "Sucess"
-	}
-	return responseMSG{Msg: msg}
-}
-
-func parseReqBody(r *http.Request, i interface{}) error {
-	r.ParseForm()
-	decoder := json.NewDecoder(r.Body)
-	return decoder.Decode(i)
-}
-
-func queryStringToStruct(query url.Values, _struct interface{}) {
-	newInstance := reflect.ValueOf(_struct).Elem()
-
-	for k, v := range query {
-		field := newInstance.FieldByName(k)
-
-		switch field.Kind() {
-		case reflect.Int:
-			intValue, err := strconv.ParseInt(v[0], 0, 64)
-			if err == nil {
-				field.SetInt(intValue)
-			}
-
-		case reflect.String:
-			field.SetString(v[0])
-
-		}
-
-	}
-}
 
 //POSTQueryProductHandler ...
 func POSTQueryProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	err := parseReqBody(r, &p)
-	if err != nil {
-		rj := createResponseMsg(err)
-		writeBack(w, r, rj)
-	} else {
-		products, err := p.Retreive()
-		if err != nil {
-			rj := createResponseMsg(err)
-			writeBack(w, r, rj)
-		} else {
-			writeBack(w, r, products)
-		}
+	decoder := requestDecoder.NewDecoder()
+	err := decoder.DecodeReqBody(&p, r.Body)
 
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
 	}
+
+	products, err := p.Retreive()
+	rj := NewResponseJSON(products, err)
+	writeBack(w, r, rj)
+
 }
 
 // GETProductHandler ...
 func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 	queryString := r.URL.Query()
 	var p models.Product
-	queryStringToStruct(queryString, &p)
+
+	decoder := requestDecoder.NewDecoder()
+	err := decoder.DecodeURLValues(&p, queryString)
+
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
+	}
 
 	products, err := p.Retreive()
-	if err != nil {
-		rj := createResponseMsg(err)
-		writeBack(w, r, rj)
-	} else {
-		writeBack(w, r, products)
-	}
+	rj := NewResponseJSON(products, err)
+	writeBack(w, r, rj)
 }
 
 // FIXME - make database insertions on the same transaction
@@ -124,51 +59,71 @@ func addProductToOrder(p models.Product) {
 // POSTProductHandler ...
 func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	err := parseReqBody(r, &p)
+	decoder := requestDecoder.NewDecoder()
+	err := decoder.DecodeReqBody(&p, r.Body)
 	if err != nil {
-		rj := createResponseMsg(err)
+		rj := NewResponseJSON(nil, err)
 		writeBack(w, r, rj)
-	} else {
-		err = p.Save()
-		if err == nil {
-			if p.NeedRefill() {
-				addProductToOrder(p)
-			}
-		}
+		return
 	}
 
-	rj := createResponseMsg(err)
+	err = p.Save()
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
+	}
+
+	if p.NeedRefill() {
+		addProductToOrder(p)
+	}
+	rj := NewResponseJSON("Product successfully saved", err)
 	writeBack(w, r, rj)
 }
 
 // PUTProductHandler ...
 func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	err := parseReqBody(r, &p)
+	decoder := requestDecoder.NewDecoder()
+	err := decoder.DecodeReqBody(&p, r.Body)
 
-	if err == nil {
-		err = p.Update()
-		if err == nil {
-			if p.NeedRefill() {
-				addProductToOrder(p)
-			}
-		}
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
 	}
 
-	rj := createResponseMsg(err)
+	err = p.Update()
+
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
+	}
+
+	if p.NeedRefill() {
+		addProductToOrder(p)
+	}
+
+	rj := NewResponseJSON("Product updated successfully", err)
 	writeBack(w, r, rj)
 }
 
 // DELETEProductHandler ...
 func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	err := parseReqBody(r, &p)
+	decoder := requestDecoder.NewDecoder()
+	err := decoder.DecodeReqBody(&p, r.Body)
 
-	if err == nil {
-		err = p.Delete()
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
 	}
 
-	rj := createResponseMsg(err)
+	err = p.Delete()
+
+	rj := NewResponseJSON("Product deleted successully", err)
 	writeBack(w, r, rj)
 }
 
@@ -182,26 +137,35 @@ func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
 // PUTOrderHandler ...
 func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var order models.Order
-	err := parseReqBody(r, &order)
+	decoder := requestDecoder.NewDecoder()
+	err := decoder.DecodeReqBody(&order, r.Body)
 
-	if err == nil {
-		err = order.Update()
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
 	}
 
-	rj := createResponseMsg(err)
+	err = order.Update()
+
+	rj := NewResponseJSON("Order updated successfully", err)
 	writeBack(w, r, rj)
 }
 
 // DELETEOrderHandler ...
 func DELETEOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var order models.Order
-	err := parseReqBody(r, &order)
+	decoder := requestDecoder.NewDecoder()
+	err := decoder.DecodeReqBody(&order, r.Body)
 
-	if err == nil {
-		err = order.Delete()
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
 	}
 
-	rj := createResponseMsg(err)
+	err = order.Delete()
 
+	rj := NewResponseJSON("Order deleted successfully", err)
 	writeBack(w, r, rj)
 }

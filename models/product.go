@@ -11,7 +11,7 @@ const (
 
 //Product struct that defines a product
 type Product struct {
-	BaseModel    `sql:"-"` // Ignore this field
+	BaseModel    `sql:"-" json:",omitempty"` // Ignore this field
 	ID           int
 	Name         string `sql:"size:255"`
 	Type         int

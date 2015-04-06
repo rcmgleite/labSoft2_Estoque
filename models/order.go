@@ -2,7 +2,7 @@ package models
 
 //Order is the struct that defines the purchase order
 type Order struct {
-	BaseModel `sql:"-"` // Ignore this field
+	BaseModel `sql:"-" json:",omitempty"` // Ignore this field
 	ID        int
 	Products  []Product `gorm:"many2many:order_products;"`
 	Approved  bool

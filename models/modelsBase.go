@@ -10,7 +10,7 @@ var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
 
 //BaseModel struct for all models
 type BaseModel struct {
-	QueryParams map[string]string `sql:"-"`
+	QueryParams map[string]string `sql:"-" json:",omitempty"`
 }
 
 //Identifiers for query
