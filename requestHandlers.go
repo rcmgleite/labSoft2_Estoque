@@ -40,6 +40,7 @@ func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	products, err := p.Retreive()
+
 	rj := NewResponseJSON(products, err)
 	writeBack(w, r, rj)
 }
@@ -110,9 +111,13 @@ func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
 
 // GETOrderHandler ...
 func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
-	order := models.Order{}
-	order.GetOpenOrder()
-	writeBack(w, r, order)
+	// order := models.Order{}
+	// order.GetOpenOrder()
+	// writeBack(w, r, order)
+	var o models.Order
+	o.GetOpenOrder()
+	rj := NewResponseJSON(o, nil)
+	writeBack(w, r, rj)
 }
 
 // PUTOrderHandler ...
