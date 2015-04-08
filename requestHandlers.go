@@ -133,24 +133,9 @@ func getJSON(object interface{}) ([]byte, error) {
 	return nil, nil
 }
 
-// PUTOrderHandler ...
-func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
-	var order models.Order
-	decoder := decoder.NewDecoder()
-	err := decoder.DecodeReqBody(&order, r.Body)
-
-	fmt.Println(order.Approved)
-	fmt.Println(order.ID)
-
-	if err != nil {
-		rj := NewResponseJSON(nil, err)
-		writeBack(w, r, rj)
-		return
-	}
-
-	err = order.Update()
-
-	order.GetByID(order.ID)
+// Function that sends the new order to compras module
+func sendOrderTOCompras(order *models.Order) error {
+	err := order.GetByID(order.ID)
 
 	if err == nil {
 		headers := make(map[string]string)
@@ -167,11 +152,37 @@ func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
 		bJSON, err := getJSON(orderToSend)
 		if err == nil {
 			resp, err := requestHelper.MakeRequest("POST", comprasIP+"/order", bJSON, headers)
-			fmt.Println(err)
-			body, _ := ioutil.ReadAll(resp.Body)
-			fmt.Println("Response", string(body))
+			if resp != nil && err == nil {
+				body, _ := ioutil.ReadAll(resp.Body)
+				fmt.Println("Response", string(body))
+			} else {
+				fmt.Println(err)
+			}
 		}
 	}
+	return err
+}
+
+// PUTOrderHandler ...
+func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
+	var order models.Order
+	decoder := decoder.NewDecoder()
+	err := decoder.DecodeReqBody(&order, r.Body)
+
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
+	}
+
+	err = order.Update()
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
+	}
+
+	err = sendOrderTOCompras(&order)
 
 	rj := NewResponseJSON("Order updated successfully", err)
 	writeBack(w, r, rj)
