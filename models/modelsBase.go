@@ -1,12 +1,27 @@
 package models
 
 import (
+	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
+	"github.com/jinzhu/gorm"
 	"github.com/rcmgleite/labSoft2_Estoque/database"
 )
 
-var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
+func fetchDatabase() *gorm.DB {
+	test, _ := strconv.ParseBool(os.Getenv("TEST"))
+	fmt.Println(test)
+
+	if test {
+		return database.GetDbFactoryInstance("sqlite3").GetDatabase("estoque_test.db")
+	}
+	return database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
+}
+
+// var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
+var db = fetchDatabase()
 
 //BaseModel struct for all models
 type BaseModel struct {
