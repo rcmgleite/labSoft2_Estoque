@@ -2,6 +2,8 @@ package server_test
 
 import (
 	"encoding/json"
+	"fmt"
+	"testing"
 
 	"github.com/rcmgleite/labSoft2_Estoque/models"
 	"github.com/rcmgleite/labSoft2_Estoque/requestHelper"
@@ -14,19 +16,22 @@ func getJSON(object interface{}) ([]byte, error) {
 	return nil, nil
 }
 
-func main() {
+func TestCase1(t *testing.T) {
 	var p models.Product
 	p.Name = "test_product"
 	p.Description = "test_descr"
 	p.CurrQuantity = 100
 	p.MinQuantity = 200
+	p.Type = 2
 	//Tests
 	// 1) Request to add product to db
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 	bJSON, err := getJSON(p)
 	if err != nil {
-		requestHelper.MakeRequest("POST", "localhost://127.0.0.1:8080/product", bJSON, headers)
+		fmt.Println(err)
+	} else {
+		requestHelper.MakeRequest("POST", "http://127.0.0.1:8080/product", bJSON, headers)
 	}
 
 	// 2) Query for the product saved

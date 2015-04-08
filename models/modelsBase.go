@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -12,7 +11,6 @@ import (
 
 func fetchDatabase() *gorm.DB {
 	test, _ := strconv.ParseBool(os.Getenv("TEST"))
-	fmt.Println(test)
 
 	if test {
 		return database.GetDbFactoryInstance("sqlite3").GetDatabase("estoque_test.db")
