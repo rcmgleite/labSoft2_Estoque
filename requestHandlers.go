@@ -1,41 +1,22 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/rcmgleite/labSoft2_Estoque/decoder"
 	"github.com/rcmgleite/labSoft2_Estoque/models"
-	"github.com/rcmgleite/labSoft2_Estoque/requestDecoder"
+	"github.com/rcmgleite/labSoft2_Estoque/requestHelper"
 )
 
 var comprasIP = "http://192.168.1.130:8080"
 
-func makeRequest(httpMethod string, url string, requestObj []byte, headers map[string]string) (*http.Response, error) {
-	req, err := http.NewRequest(httpMethod, url, bytes.NewBuffer(requestObj))
-	addHeaders(req, headers)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
-
-}
-
-func addHeaders(req *http.Request, headers map[string]string) {
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-}
-
 //POSTQueryProductHandler ...
 func POSTQueryProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	decoder := requestDecoder.NewDecoder()
+	decoder := decoder.NewDecoder()
 	err := decoder.DecodeReqBody(&p, r.Body)
 
 	if err != nil {
@@ -55,7 +36,7 @@ func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 	queryString := r.URL.Query()
 	var p models.Product
 
-	decoder := requestDecoder.NewDecoder()
+	decoder := decoder.NewDecoder()
 	err := decoder.DecodeURLValues(&p, queryString)
 
 	if err != nil {
@@ -73,7 +54,7 @@ func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 // POSTProductHandler ...
 func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	decoder := requestDecoder.NewDecoder()
+	decoder := decoder.NewDecoder()
 	err := decoder.DecodeReqBody(&p, r.Body)
 	if err != nil {
 		rj := NewResponseJSON(nil, err)
@@ -95,7 +76,7 @@ func POSTProductHandler(w http.ResponseWriter, r *http.Request) {
 // PUTProductHandler ...
 func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	decoder := requestDecoder.NewDecoder()
+	decoder := decoder.NewDecoder()
 	err := decoder.DecodeReqBody(&p, r.Body)
 
 	if err != nil {
@@ -119,7 +100,7 @@ func PUTProductHandler(w http.ResponseWriter, r *http.Request) {
 // DELETEProductHandler ...
 func DELETEProductHandler(w http.ResponseWriter, r *http.Request) {
 	var p models.Product
-	decoder := requestDecoder.NewDecoder()
+	decoder := decoder.NewDecoder()
 	err := decoder.DecodeReqBody(&p, r.Body)
 
 	if err != nil {
@@ -155,7 +136,7 @@ func getJSON(object interface{}) ([]byte, error) {
 // PUTOrderHandler ...
 func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var order models.Order
-	decoder := requestDecoder.NewDecoder()
+	decoder := decoder.NewDecoder()
 	err := decoder.DecodeReqBody(&order, r.Body)
 
 	fmt.Println(order.Approved)
@@ -185,7 +166,7 @@ func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
 		orderToSend := &models.OrderToSend{Products: pToSend}
 		bJSON, err := getJSON(orderToSend)
 		if err == nil {
-			resp, err := makeRequest("POST", comprasIP+"/order", bJSON, headers)
+			resp, err := requestHelper.MakeRequest("POST", comprasIP+"/order", bJSON, headers)
 			fmt.Println(err)
 			body, _ := ioutil.ReadAll(resp.Body)
 			fmt.Println("Response", string(body))
@@ -199,7 +180,7 @@ func PUTOrderHandler(w http.ResponseWriter, r *http.Request) {
 // DELETEOrderHandler ...
 func DELETEOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var order models.Order
-	decoder := requestDecoder.NewDecoder()
+	decoder := decoder.NewDecoder()
 	err := decoder.DecodeReqBody(&order, r.Body)
 
 	if err != nil {

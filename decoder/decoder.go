@@ -1,4 +1,4 @@
-package requestDecoder
+package decoder
 
 import (
 	"encoding/json"
