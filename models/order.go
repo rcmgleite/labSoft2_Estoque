@@ -1,11 +1,30 @@
 package models
 
+// OrderToSend ...
+type OrderToSend struct {
+	Products []ProductToSend `json:"produtos"`
+}
+
 //Order is the struct that defines the purchase order
 type Order struct {
 	BaseModel `sql:"-" json:",omitempty"` // Ignore this field
 	ID        int
 	Products  []Product `gorm:"many2many:order_products;"`
+	Valor     int       `json:"valor" sql:"-"`
 	Approved  bool
+}
+
+// GetByID ...
+func (order *Order) GetByID(id int) error {
+	err := db.Where("id = ?", id).First(order).Error
+	if err != nil {
+		return err
+	}
+	products := []Product{}
+	err = db.Model(order).Related(&products, "Products").Error
+	order.Products = products
+
+	return err
 }
 
 //Save ..

@@ -9,6 +9,13 @@ const (
 	ROOMITENS // towels, bed sheets
 )
 
+// ProductToSend ...
+type ProductToSend struct {
+	ProductID  int     `json:"produto_id"`
+	Valor      float64 `json:"valor"`
+	Quantidade int     `json:"quantidade"`
+}
+
 //Product struct that defines a product
 type Product struct {
 	BaseModel    `sql:"-" json:",omitempty"` // Ignore this field
