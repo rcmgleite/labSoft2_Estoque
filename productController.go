@@ -25,6 +25,24 @@ func POSTQueryProductHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//POSTConsumeProductHandler ...
+func POSTConsumeProductHandler(w http.ResponseWriter, r *http.Request) {
+	var toConsume models.ProductToConsume
+	decoder := decoder.NewDecoder()
+	err := decoder.DecodeReqBody(&toConsume, r.Body)
+
+	if err != nil {
+		rj := NewResponseJSON(nil, err)
+		writeBack(w, r, rj)
+		return
+	}
+
+	product := &models.Product{ID: toConsume.ID}
+	err = product.Consume(toConsume.Quantity)
+	rj := NewResponseJSON("Product Consumed successfully", err)
+	writeBack(w, r, rj)
+}
+
 // GETProductHandler ...
 func GETProductHandler(w http.ResponseWriter, r *http.Request) {
 	queryString := r.URL.Query()

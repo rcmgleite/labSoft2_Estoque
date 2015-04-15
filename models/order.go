@@ -37,7 +37,8 @@ func (order *Order) GetByID(id int) error {
 
 //Save ..
 func (order *Order) Save() error {
-	return db.Create(order).Error
+	err := db.Create(order).Error
+	return err
 }
 
 // Update ...
@@ -46,12 +47,14 @@ func (order *Order) Update() error {
 	if err != nil {
 		return err
 	}
+
 	return order.send(comprasIP, "/order")
 }
 
 // Delete ...
 func (order *Order) Delete() error {
-	return db.Delete(order).Error
+	err := db.Delete(order).Error
+	return err
 }
 
 //GetOpenOrder ...
@@ -81,26 +84,28 @@ func (order *Order) AddProduct(product Product) error {
 
 func (order *Order) createOrderAndAddProduct(product Product) error {
 	//Creates a single transaction to create and add new product to order
-	tx := db.Begin()
+	tx := db.GetTransaction()
 
 	err := tx.Create(order).Error
 	if err != nil {
-		tx.Rollback()
+		db.DoRollback()
 		return err
 	}
 
 	err = tx.Model(order).Association("Products").Append([]Product{product}).Error
 	if err != nil {
-		tx.Rollback()
+		db.DoRollback()
 		return err
 	}
 
-	tx.Commit()
+	db.DoCommit()
 	return nil
 }
 
 func (order *Order) addProduct(product Product) error {
-	return db.Model(order).Association("Products").Append([]Product{product}).Error
+	err := db.GetTransaction().Model(order).Association("Products").Append([]Product{product}).Error
+	db.DoCommit()
+	return err
 }
 
 // FIXME - MOVE THIS FUNCTION TO A PROPER HELPER

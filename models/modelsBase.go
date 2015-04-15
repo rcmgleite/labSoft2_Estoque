@@ -5,14 +5,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jinzhu/gorm"
 	"github.com/rcmgleite/labSoft2_Estoque/database"
 )
 
 //FIXME - USE PROC ENV VARIABLE TO HOLD THIS VALUE
 var comprasIP = "http://192.168.1.130:8080"
 
-func fetchDatabase() *gorm.DB {
+func fetchDatabase() *database.Database {
 	test, _ := strconv.ParseBool(os.Getenv("TEST"))
 
 	if test {

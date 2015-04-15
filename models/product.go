@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 const (
 	//FOOD ...
 	FOOD = 1 << iota
@@ -14,6 +16,12 @@ type ProductToSend struct {
 	ProductID  int     `json:"produto_id"`
 	Valor      float64 `json:"valor"`
 	Quantidade int     `json:"quantidade"`
+}
+
+// ProductToConsume ...
+type ProductToConsume struct {
+	ID       int
+	Quantity int
 }
 
 //Product struct that defines a product
@@ -44,11 +52,11 @@ func (p *Product) Save() error {
 
 // Update ...
 func (p *Product) Update() error {
-	err := db.Save(p).Error
-
+	err := db.GetTransaction().Save(p).Error
 	if err != nil {
 		return err
 	}
+	db.DoCommit()
 
 	if p.NeedRefill() {
 		order := Order{}
@@ -59,7 +67,8 @@ func (p *Product) Update() error {
 
 // Delete ...
 func (p *Product) Delete() error {
-	return db.Delete(p).Error
+	err := db.Delete(p).Error
+	return err
 }
 
 //Retreive ... it uses the object and a plain query to execute sql cmds
@@ -83,6 +92,34 @@ func (p *Product) Retreive() ([]Product, error) {
 	}
 
 	return products, err
+}
+
+// Consume ...
+func (p *Product) Consume(quantity int) error {
+	tx := db.GetTransaction()
+	var pp Product
+	err := tx.Where(*p).First(&pp).Error
+
+	if err != nil {
+		db.DoRollback()
+		return err
+	}
+
+	if pp.CurrQuantity-quantity < 0 {
+		db.DoRollback()
+		return errors.New("Requested quantity exceeds the available amount")
+	}
+
+	pp.CurrQuantity = pp.CurrQuantity - quantity
+	err = pp.Update()
+
+	if err != nil {
+		db.DoRollback()
+		return err
+	}
+
+	db.DoCommit()
+	return nil
 }
 
 //NeedRefill verify if product need refill
