@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 )
 
 //HTTP METHODS
@@ -18,6 +19,10 @@ type route struct {
 	method  string
 	handler http.HandlerFunc
 }
+
+const (
+	servingFileRegex = "^.*\\.(html|css|js)$"
+)
 
 //Router struct
 type Router struct {
@@ -72,7 +77,13 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 	route := r.routes[rq.URL.Path+rq.Method]
 	if route != nil {
 		route.handler(w, rq)
-	} else {
-		http.ServeFile(w, rq, rq.URL.Path[1:])
+		return
 	}
+	match, _ := regexp.MatchString(servingFileRegex, rq.URL.Path)
+	if match {
+		http.ServeFile(w, rq, rq.URL.Path[1:])
+		return
+	}
+
+	http.NotFound(w, rq)
 }

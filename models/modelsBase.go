@@ -9,7 +9,7 @@ import (
 )
 
 //FIXME - USE PROC ENV VARIABLE TO HOLD THIS VALUE
-var comprasIP = "http://192.168.1.130:8080"
+var comprasIP = "http://192.168.1.132:8080"
 
 func fetchDatabase() *database.Database {
 	test, _ := strconv.ParseBool(os.Getenv("TEST"))
