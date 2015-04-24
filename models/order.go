@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/rcmgleite/labSoft2_Estoque/database"
 	"github.com/rcmgleite/labSoft2_Estoque/requestHelper"
 )
 
@@ -24,6 +25,7 @@ type Order struct {
 
 // GetByID ...
 func (order *Order) GetByID(id int) error {
+	db := database.GetDatabase()
 	err := db.Where("id = ?", id).First(order).Error
 	if err != nil {
 		return err
@@ -37,12 +39,14 @@ func (order *Order) GetByID(id int) error {
 
 //Save ..
 func (order *Order) Save() error {
-	err := db.Create(order).Error
-	return err
+	db := database.GetDatabase()
+	return db.Create(order).Error
 }
 
 // Update ...
 func (order *Order) Update() error {
+	db := database.GetDatabase()
+
 	err := db.Save(order).Error
 	if err != nil {
 		return err
@@ -53,12 +57,16 @@ func (order *Order) Update() error {
 
 // Delete ...
 func (order *Order) Delete() error {
+	db := database.GetDatabase()
+
 	err := db.Delete(order).Error
 	return err
 }
 
 //GetOpenOrder ...
 func (order *Order) GetOpenOrder() error {
+	db := database.GetDatabase()
+
 	err := db.Where("approved = ?", false).First(order).Error
 	if err != nil {
 		return err
@@ -83,29 +91,25 @@ func (order *Order) AddProduct(product Product) error {
 }
 
 func (order *Order) createOrderAndAddProduct(product Product) error {
-	//Creates a single transaction to create and add new product to order
-	tx := db.GetTransaction()
+	db := database.GetDatabase()
 
-	err := tx.Create(order).Error
+	err := db.Create(order).Error
 	if err != nil {
-		db.DoRollback()
 		return err
 	}
 
-	err = tx.Model(order).Association("Products").Append([]Product{product}).Error
+	err = db.Model(order).Association("Products").Append([]Product{product}).Error
 	if err != nil {
-		db.DoRollback()
 		return err
 	}
 
-	db.DoCommit()
 	return nil
 }
 
 func (order *Order) addProduct(product Product) error {
-	err := db.GetTransaction().Model(order).Association("Products").Append([]Product{product}).Error
-	db.DoCommit()
-	return err
+	db := database.GetDatabase()
+
+	return db.Model(order).Association("Products").Append([]Product{product}).Error
 }
 
 // FIXME - MOVE THIS FUNCTION TO A PROPER HELPER

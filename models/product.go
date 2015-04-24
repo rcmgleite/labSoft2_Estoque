@@ -1,6 +1,10 @@
 package models
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/rcmgleite/labSoft2_Estoque/database"
+)
 
 const (
 	//FOOD ...
@@ -37,6 +41,8 @@ type Product struct {
 
 //Save ..
 func (p *Product) Save() error {
+	db := database.GetDatabase()
+
 	err := db.Create(p).Error
 	if err != nil {
 		return err
@@ -52,11 +58,12 @@ func (p *Product) Save() error {
 
 // Update ...
 func (p *Product) Update() error {
-	err := db.GetTransaction().Save(p).Error
+	db := database.GetDatabase()
+
+	err := db.Save(p).Error
 	if err != nil {
 		return err
 	}
-	db.DoCommit()
 
 	if p.NeedRefill() {
 		order := Order{}
@@ -67,12 +74,13 @@ func (p *Product) Update() error {
 
 // Delete ...
 func (p *Product) Delete() error {
-	err := db.Delete(p).Error
-	return err
+	db := database.GetDatabase()
+	return db.Delete(p).Error
 }
 
 //Retreive ... it uses the object and a plain query to execute sql cmds
 func (p *Product) Retreive() ([]Product, error) {
+	db := database.GetDatabase()
 	var query string
 	if p.QueryParams != nil {
 		query = buildQuery(p.QueryParams)
@@ -82,7 +90,6 @@ func (p *Product) Retreive() ([]Product, error) {
 
 	var products []Product
 	var err error
-
 	//Remove queryParams
 	p.QueryParams = nil
 	if orderBy != "" {
@@ -96,17 +103,16 @@ func (p *Product) Retreive() ([]Product, error) {
 
 // Consume ...
 func (p *Product) Consume(quantity int) error {
-	tx := db.GetTransaction()
+	db := database.GetDatabase()
+
 	var pp Product
-	err := tx.Where(*p).First(&pp).Error
+	err := db.Where(*p).First(&pp).Error
 
 	if err != nil {
-		db.DoRollback()
 		return err
 	}
 
 	if pp.CurrQuantity-quantity < 0 {
-		db.DoRollback()
 		return errors.New("Requested quantity exceeds the available amount")
 	}
 
@@ -114,11 +120,9 @@ func (p *Product) Consume(quantity int) error {
 	err = pp.Update()
 
 	if err != nil {
-		db.DoRollback()
 		return err
 	}
 
-	db.DoCommit()
 	return nil
 }
 

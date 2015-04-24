@@ -1,27 +1,9 @@
 package models
 
-import (
-	"os"
-	"strconv"
-	"strings"
-
-	"github.com/rcmgleite/labSoft2_Estoque/database"
-)
+import "strings"
 
 //FIXME - USE PROC ENV VARIABLE TO HOLD THIS VALUE
 var comprasIP = "http://192.168.1.132:8080"
-
-func fetchDatabase() *database.Database {
-	test, _ := strconv.ParseBool(os.Getenv("TEST"))
-
-	if test {
-		return database.GetDbFactoryInstance("sqlite3").GetDatabase("estoque_test.db")
-	}
-	return database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
-}
-
-// var db = database.GetDbFactoryInstance("sqlite3").GetDatabase("./estoque.db")
-var db = fetchDatabase()
 
 //BaseModel struct for all models
 type BaseModel struct {
