@@ -49,8 +49,8 @@ func (p *Product) Save() error {
 	}
 
 	if p.NeedRefill() {
-		order := Order{}
-		err = order.AddProduct(*p)
+
+		AddProductToOpenOrder(*p)
 	}
 
 	return err
@@ -66,9 +66,11 @@ func (p *Product) Update() error {
 	}
 
 	if p.NeedRefill() {
-		order := Order{}
-		err = order.AddProduct(*p)
+		AddProductToOpenOrder(*p)
+	} else if has, err := OpenOrderHasProduct(*p); has && err == nil {
+		RemoveProductFromOpenOrder(*p)
 	}
+
 	return err
 }
 

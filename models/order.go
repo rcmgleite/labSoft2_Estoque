@@ -64,9 +64,8 @@ func (order *Order) Delete() error {
 }
 
 //GetOpenOrder ...
-func (order *Order) GetOpenOrder() error {
+func GetOpenOrder(order *Order) error {
 	db := database.GetDatabase()
-
 	err := db.Where("approved = ?", false).First(order).Error
 	if err != nil {
 		return err
@@ -78,9 +77,43 @@ func (order *Order) GetOpenOrder() error {
 	return err
 }
 
-// AddProduct ...
-func (order *Order) AddProduct(product Product) error {
-	err := order.GetOpenOrder()
+// OpenOrderHasProduct ...
+func OpenOrderHasProduct(product Product) (bool, error) {
+	db := database.GetDatabase()
+
+	order := Order{}
+	err := GetOpenOrder(&order)
+	if err != nil {
+		return false, err
+	}
+
+	err = db.Model(order).Association("Products").Find(&product).Error
+
+	if err != nil {
+		if err.Error() == "record not found" {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
+
+// RemoveProductFromOpenOrder from the existing opened order
+func RemoveProductFromOpenOrder(product Product) error {
+	db := database.GetDatabase()
+	order := Order{}
+	err := GetOpenOrder(&order)
+	if err != nil {
+		return err
+	}
+	return db.Model(order).Association("Products").Delete([]Product{product}).Error
+}
+
+// AddProductToOpenOrder to the existing opened order or creates a new order if needed
+func AddProductToOpenOrder(product Product) error {
+	var order Order
+	err := GetOpenOrder(&order)
 	if err != nil {
 		if err.Error() == "record not found" {
 			return order.createOrderAndAddProduct(product)

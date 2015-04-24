@@ -10,7 +10,7 @@ import (
 // GETOrderHandler ...
 func GETOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var o models.Order
-	o.GetOpenOrder()
+	models.GetOpenOrder(&o)
 	rj := NewResponseJSON(o, nil)
 	writeBack(w, r, rj)
 }
