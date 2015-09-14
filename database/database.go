@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/jinzhu/gorm"
-	//Blank import needed
+	//Blank import needed to call init from go-sqlite3()
 	_ "github.com/mattn/go-sqlite3"
 )
 

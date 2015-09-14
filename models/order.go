@@ -26,14 +26,13 @@ type Order struct {
 // GetByID ...
 func (order *Order) GetByID(id int) error {
 	db := database.GetDatabase()
-	err := db.Where("id = ?", id).First(order).Error
-	if err != nil {
-		return err
-	}
+	order.ID = id
+
 	products := []Product{}
-	err = db.Model(order).Related(&products, "Products").Error
+	err := db.Model(order).Related(&products, "Products").Error
 	order.Products = products
 
+	fmt.Println(order)
 	return err
 }
 

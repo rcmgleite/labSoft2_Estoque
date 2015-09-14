@@ -23,9 +23,7 @@ func main() {
 	r.AddRoute("/order", router.PUT, PUTOrderHandler)
 	r.AddRoute("/order", router.DELETE, DELETEOrderHandler)
 
-	http.Handle("/", r)
-
 	fmt.Println("Server running on port: 8080")
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", r)
 }
