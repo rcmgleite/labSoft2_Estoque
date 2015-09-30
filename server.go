@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/rcmgleite/labSoft2_Estoque/router"
+	"github.com/rcmgleite/router"
 )
 
 func main() {
